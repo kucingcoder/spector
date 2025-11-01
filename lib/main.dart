@@ -22,7 +22,6 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
   final String title;
 
   @override
@@ -31,7 +30,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late WebViewController controller;
-  var loadingPercentage = 0;
+
   @override
   void initState() {
     super.initState();
@@ -40,40 +39,33 @@ class _MyHomePageState extends State<MyHomePage> {
           ..setJavaScriptMode(JavaScriptMode.unrestricted)
           ..setNavigationDelegate(
             NavigationDelegate(
-              onPageStarted: (url) {
-                setState(() {
-                  loadingPercentage = 0;
-                });
-              },
-              onProgress: (progress) {
-                setState(() {
-                  loadingPercentage = progress;
-                });
-              },
-              onPageFinished: (url) {
-                setState(() {
-                  loadingPercentage = 100;
-                });
-              },
+              onWebResourceError: (_) => debugPrint('Cannot Load Resource'),
             ),
           )
           ..loadRequest(Uri.parse('https://garasiasatu.com/mobile'));
   }
 
+  Future<void> _handleRefresh() async {
+    await controller.reload();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.white),
-      body: Stack(
-        children: [
-          WebViewWidget(controller: controller),
-          loadingPercentage < 100
-              ? LinearProgressIndicator(
-                color: Colors.red,
-                value: loadingPercentage / 100.0,
-              )
-              : Container(),
-        ],
+      appBar: const PreferredSize(
+        preferredSize: Size.fromHeight(0),
+        child: SizedBox.shrink(),
+      ),
+      body: RefreshIndicator(
+        color: Theme.of(context).colorScheme.primary,
+        onRefresh: _handleRefresh,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height,
+            child: WebViewWidget(controller: controller),
+          ),
+        ),
       ),
     );
   }
