@@ -344,6 +344,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.23.0"
+  webview_refresher:
+    dependency: "direct main"
+    description:
+      name: webview_refresher
+      sha256: "86dd485460ffc6e90cdf6f8ee32e709ebda18f4080db6fdd5954d4065e17bf34"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0+1"
   xml:
     dependency: transitive
     description:

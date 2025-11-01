@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_refresher/webview_refresher.dart';
 
 void main() {
   runApp(const MyApp());
@@ -29,44 +31,43 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late WebViewController controller;
+  final controller = WebViewController();
+  Completer<void>? _completer;
+
+  Future<void> onRefresh() {
+    _completer = Completer<void>();
+    controller.reload();
+    return _completer!.future;
+  }
+
+  void finishRefresh() {
+    if (!(_completer?.isCompleted ?? true)) {
+      _completer?.complete();
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    controller =
-        WebViewController()
-          ..setJavaScriptMode(JavaScriptMode.unrestricted)
-          ..setNavigationDelegate(
-            NavigationDelegate(
-              onWebResourceError: (_) => debugPrint('Cannot Load Resource'),
-            ),
-          )
-          ..loadRequest(Uri.parse('https://garasiasatu.com/mobile'));
-  }
-
-  Future<void> _handleRefresh() async {
-    await controller.reload();
+    controller
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (url) => finishRefresh(),
+          onWebResourceError: (error) => finishRefresh(),
+        ),
+      )
+      ..loadRequest(Uri.parse('https://garasiasatu.com/mobile'));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const PreferredSize(
-        preferredSize: Size.fromHeight(0),
-        child: SizedBox.shrink(),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(0),
+        child: AppBar(backgroundColor: Colors.white24),
       ),
-      body: RefreshIndicator(
-        color: Theme.of(context).colorScheme.primary,
-        onRefresh: _handleRefresh,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height,
-            child: WebViewWidget(controller: controller),
-          ),
-        ),
-      ),
+      body: WebviewRefresher(controller: controller, onRefresh: onRefresh),
     );
   }
 }
