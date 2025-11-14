@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-// Import baru
 import 'package:image_picker/image_picker.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -38,7 +37,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   late final WebViewController controller;
   Completer<void>? _completer;
-  // Buat instance ImagePicker
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -66,7 +64,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  /// Menampilkan bottom sheet untuk memilih sumber gambar (Kamera vs Galeri)
   Future<ImageSource?> _showImageSourceSheet(BuildContext context) {
     return showModalBottomSheet<ImageSource>(
       context: context,
@@ -92,35 +89,30 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  /// MODIFIKASI UTAMA DI SINI
   Future<List<String>> _androidFilePicker(FileSelectorParams params) async {
-    // Periksa apakah web meminta file gambar
     final bool isImage = params.acceptTypes.any(
       (type) => type.startsWith('image/'),
     );
 
     if (isImage) {
-      // Jika ya, tampilkan pilihan Kamera/Galeri
       ImageSource? source;
       if (mounted) {
         source = await _showImageSourceSheet(context);
       }
 
-      if (source == null) return []; // User membatalkan pilihan
+      if (source == null) return [];
 
       final XFile? file = await _picker.pickImage(source: source);
 
-      if (file == null) return []; // User membatalkan ambil gambar
+      if (file == null) return [];
 
       final fileUri = Uri.file(file.path).toString();
       debugPrint('Picked file URI: $fileUri');
       return [fileUri];
     } else {
-      // Jika bukan gambar (misal PDF, dll), gunakan FilePicker biasa
       try {
         FilePickerResult? result = await FilePicker.platform.pickFiles(
           type: FileType.any,
-          // Hormati jika web meminta multiple files
           allowMultiple: params.mode == FileSelectorMode.openMultiple,
           withData: false,
         );
